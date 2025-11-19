@@ -18,7 +18,6 @@ st.markdown("""
 .main { 
     background-color: #f9fafb; 
 } 
-
 .title { 
     font-size: 2.2rem; 
     font-weight: 700; 
@@ -26,14 +25,12 @@ st.markdown("""
     text-align: center; 
     margin-bottom: 0.5rem; 
 } 
-
 .subtitle { 
     text-align: center; 
     color: #555; 
     font-size: 1.1rem; 
     margin-bottom: 2rem; 
 }
-
 .desc-box { 
     background-color: #ffffff; 
     border-radius: 12px; 
@@ -42,7 +39,6 @@ st.markdown("""
     margin-bottom: 1.5rem; 
     color: #000;
 } 
-
 .info-box { 
     background-color: #e6f0ff; 
     color: #003366; 
@@ -51,7 +47,6 @@ st.markdown("""
     margin-bottom: 1rem; 
     font-weight: 500; 
 } 
-
 .model-box { 
     background-color: #f0f7ff; 
     border-left: 4px solid #0073e6; 
@@ -68,7 +63,6 @@ st.markdown("""
 st.markdown("<div class='title'>Dashboard Prediksi Konsumsi Listrik Kota Makassar</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle'>Analisis Konsumsi Listrik Bulanan Wilayah Utara & Selatan Menggunakan Model LSTM dan GRU</div>", unsafe_allow_html=True)
 
-# TAB NAVIGASI
 tab1, tab2 = st.tabs(["🏠 Beranda", "📈 Prediksi"])
 
 # TAB 1: BERANDA
@@ -105,7 +99,6 @@ with tab1:
 
 # TAB 2: PREDIKSI
 with tab2:
-    # === RELATIVE PATH FOR DEPLOYMENT ===
     icon_path = "icon/filter.png"
     base_dir = "."
     data_dir = os.path.join(base_dir, "data")
@@ -117,10 +110,8 @@ with tab2:
 
     # SIDEBAR
     col1, col2 = st.sidebar.columns([1, 7])
-
     with col1:
         st.image(icon_path, width=26)
-
     with col2:
         st.markdown(
             """
