@@ -125,7 +125,7 @@ with tab2:
         )
 
     wilayah = st.sidebar.selectbox("Pilih Wilayah", ["Selatan", "Utara"])
-    n_future = st.sidebar.slider("Jumlah bulan prediksi ke depan", 1, 12, 6)
+    n_future = st.sidebar.slider("Jumlah Bulan Prediksi", 1, 12, 6)
     model_option = st.sidebar.selectbox("Pilih Model Prediksi", ["Model Terbaik", "LSTM", "GRU"])
     compare_models = st.sidebar.checkbox("Tampilkan Perbandingan LSTM vs GRU")
 
