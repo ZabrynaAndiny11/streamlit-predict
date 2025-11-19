@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import os
+import plotly.graph_objects as go
 from sklearn.preprocessing import MinMaxScaler
 
 st.set_page_config(
@@ -11,49 +12,55 @@ st.set_page_config(
     layout="wide"
 )
 
-# CSS
+# css
 st.markdown("""
-<style>
-    .main {
-        background-color: #f9fafb;
-    }
-    .title {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #003366;
-        text-align: center;
-        margin-bottom: 0.5rem;
-    }
-    .subtitle {
-        text-align: center;
-        color: #555;
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-    }
-    .desc-box {
-        background-color: #ffffff;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 1px 6px rgba(0,0,0,0.08);
-        margin-bottom: 1.5rem;
-    }
-    .info-box {
-        background-color: #e6f0ff;
-        color: #003366;
-        border-radius: 10px;
-        padding: 0.8rem 1rem;
-        margin-bottom: 1rem;
-        font-weight: 500;
-    }
-    .model-box {
-        background-color: #f0f7ff;
-        border-left: 4px solid #0073e6;
-        padding: 1rem;
-        border-radius: 6px;
-        margin-top: 1rem;
-        font-size: 0.95rem;
-        color: #003366;
-    }
+<style> 
+.main { 
+    background-color: #f9fafb; 
+} 
+
+.title { 
+    font-size: 2.2rem; 
+    font-weight: 700; 
+    color: #003366; 
+    text-align: center; 
+    margin-bottom: 0.5rem; 
+} 
+
+.subtitle { 
+    text-align: center; 
+    color: #555; 
+    font-size: 1.1rem; 
+    margin-bottom: 2rem; 
+}
+
+.desc-box { 
+    background-color: #ffffff; 
+    border-radius: 12px; 
+    padding: 1.5rem; 
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08); 
+    margin-bottom: 1.5rem; 
+    color: #000;
+} 
+
+.info-box { 
+    background-color: #e6f0ff; 
+    color: #003366; 
+    border-radius: 10px; 
+    padding: 0.8rem 1rem; 
+    margin-bottom: 1rem; 
+    font-weight: 500; 
+} 
+
+.model-box { 
+    background-color: #f0f7ff; 
+    border-left: 4px solid #0073e6; 
+    padding: 1rem; 
+    border-radius: 6px; 
+    margin-top: 1rem; 
+    font-size: 0.95rem; 
+    color: #003366; 
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -159,6 +166,12 @@ with tab2:
     st.caption("Berikut 12 bulan terakhir konsumsi listrik yang digunakan sebagai dasar prediksi:")
 
     df_last = data.tail(12).copy()
+
+    # Pastikan kolom tahun tidak berubah menjadi format ribuan
+    if "tahun" in df_last.columns:
+        df_last["tahun"] = df_last["tahun"].astype(str)
+
+    # Format konsumsi_kWh saja
     if "konsumsi_kWh" in df_last.columns:
         df_last["konsumsi_kWh"] = df_last["konsumsi_kWh"].apply(lambda x: f"{x:,.0f}")
 
@@ -248,14 +261,46 @@ with tab2:
         df_show["Prediksi_GRU (kWh)"] = df_show["Prediksi_GRU (kWh)"].apply(lambda x: f"{x:,.0f}")
         st.dataframe(df_show, use_container_width=True)
 
-        # Chart
-        fig, ax = plt.subplots(figsize=(14, 7))
-        ax.plot(data['tanggal'], data['konsumsi_kWh'], label="Data Aktual", linewidth=2)
-        ax.plot(future_dates, preds_lstm_inv, label="Prediksi LSTM", linestyle="--", marker="o")
-        ax.plot(future_dates, preds_gru_inv,  label="Prediksi GRU", linestyle="-.", marker="s")
-        ax.grid(alpha=0.3)
-        ax.legend()
-        st.pyplot(fig)
+        fig = go.Figure()
+
+        # Data aktual
+        fig.add_trace(go.Scatter(
+            x=data["tanggal"],
+            y=data["konsumsi_kWh"],
+            mode="lines+markers",
+            name="Data Aktual",
+            hovertemplate="<b>%{x|%d-%b-%Y}</b><br>Total: <b>%{y:,.0f} kWh</b><extra></extra>"
+        ))
+
+        # Prediksi LSTM
+        fig.add_trace(go.Scatter(
+            x=future_dates,
+            y=preds_lstm_inv,
+            mode="lines+markers",
+            name="Prediksi LSTM",
+            line=dict(dash="dash"),
+            hovertemplate="<b>%{x|%d-%b-%Y}</b><br>LSTM: <b>%{y:,.0f} kWh</b><extra></extra>"
+        ))
+
+        # Prediksi GRU
+        fig.add_trace(go.Scatter(
+            x=future_dates,
+            y=preds_gru_inv,
+            mode="lines+markers",
+            name="Prediksi GRU",
+            line=dict(dash="dot"),
+            hovertemplate="<b>%{x|%d-%b-%Y}</b><br>GRU: <b>%{y:,.0f} kWh</b><extra></extra>"
+        ))
+
+        fig.update_layout(
+            title="Perbandingan Prediksi LSTM vs GRU",
+            xaxis_title="Tahun",
+            yaxis_title="Konsumsi (kWh)",
+            hoverlabel=dict(bgcolor="white", font_size=14),
+            template="plotly_white"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
 
         # Save CSV
         csv_filename = f"prediksi_perbandingan_{wilayah.lower()}_{n_future}bulan.csv"
@@ -315,12 +360,36 @@ with tab2:
         st.dataframe(df_show, use_container_width=True)
 
         # Chart
-        fig, ax = plt.subplots(figsize=(14, 7))
-        ax.plot(data['tanggal'], data['konsumsi_kWh'], label="Data Aktual", linewidth=2)
-        ax.plot(pred_df['Tanggal'], pred_df[col_name], label=f"Prediksi {chosen_model_name}", linestyle="--", marker="o")
-        ax.grid(alpha=0.3)
-        ax.legend()
-        st.pyplot(fig)
+        fig = go.Figure()
+
+        # Data aktual
+        fig.add_trace(go.Scatter(
+            x=data["tanggal"],
+            y=data["konsumsi_kWh"],
+            mode="lines+markers",
+            name="Data Aktual",
+            hovertemplate="<b>%{x|%d-%b-%Y}</b><br>Total: <b>%{y:,.0f} kWh</b><extra></extra>"
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=pred_df["Tanggal"],
+            y=pred_df[col_name],
+            mode="lines+markers",
+            name=f"Prediksi {chosen_model_name}",
+            line=dict(dash="dash"),
+            hovertemplate="<b>%{x|%d-%b-%Y}</b><br>"
+                        f"Prediksi {chosen_model_name}: <b>%{{y:,.0f}} kWh</b><extra></extra>"
+        ))
+
+        fig.update_layout(
+            title=f"Prediksi Konsumsi Listrik Menggunakan {chosen_model_name}",
+            xaxis_title="Tahun",
+            yaxis_title="Konsumsi (kWh)",
+            hoverlabel=dict(bgcolor="white", font_size=14),
+            template="plotly_white"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
 
         # Save CSV
         csv_filename = f"prediksi_{wilayah.lower()}_{chosen_model_name.lower()}_{n_future}bulan.csv"
