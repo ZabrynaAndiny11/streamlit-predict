@@ -61,7 +61,7 @@ st.markdown("""
 
 # HEADER UTAMA
 st.markdown("<div class='title'>Dashboard Prediksi Konsumsi Listrik Kota Makassar</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>Analisis Konsumsi Listrik Bulanan Wilayah Utara & Selatan Menggunakan Model LSTM dan GRU</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>Analisis Konsumsi Listrik Bulanan Wilayah Selatan & Utara Menggunakan Model LSTM dan GRU</div>", unsafe_allow_html=True)
 
 tab1, tab2 = st.tabs(["🏠 Beranda", "📈 Prediksi"])
 
