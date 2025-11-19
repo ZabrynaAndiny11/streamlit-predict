@@ -12,60 +12,49 @@ st.set_page_config(
     layout="wide"
 )
 
-# css
+# CSS
 st.markdown("""
 <style>
-.main { background-color: #f9fafb; } 
-.title { font-size: 2.2rem; font-weight: 700; color: #003366; text-align: center; margin-bottom: 0.5rem; } 
-.subtitle { text-align: center; color: #555; font-size: 1.1rem; margin-bottom: 2rem; }
-.desc-box { 
-    background-color: #ffffff; 
-    border-radius: 12px; 
-    padding: 1.5rem; 
-    box-shadow: 0 1px 6px rgba(0,0,0,0.08); 
-    margin-bottom: 1.5rem; 
-    color: #000;
-} 
-.info-box { 
-    background-color: #e6f0ff; 
-    color: #003366; 
-    border-radius: 10px; 
-    padding: 0.8rem 1rem; 
-    margin-bottom: 1rem; 
-    font-weight: 500; 
-} 
-.model-box { 
-    background-color: #f0f7ff; 
-    border-left: 4px solid #0073e6; 
-    padding: 1rem; 
-    border-radius: 6px; 
-    margin-top: 1rem; 
-    font-size: 0.95rem; 
-    color: #003366; 
-}
-            
-[data-theme="dark"] .desc-box {
-    background-color: #57595B !important;
-    color: #f0f0f0 !important;
-}
-[data-theme="dark"] .desc-box * {
-    color: #f0f0f0 !important;
-}
-[data-theme="dark"] .info-box {
-    background-color: #57595B !important;
-    color: #f0f0f0 !important;
-}
-[data-theme="dark"] .info-box * {
-    color: #f0f0f0 !important;
-}
-[data-theme="dark"] .model-box {
-    background-color: #57595B !important;
-    border-left: 4px solid #a7c7ff !important;
-    color: #f0f0f0 !important;
-}
-[data-theme="dark"] .model-box * {
-    color: #f0f0f0 !important;
-}
+    .main {
+        background-color: #f9fafb;
+    }
+    .title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #003366;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    .subtitle {
+        text-align: center;
+        color: #555;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    .desc-box {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+    }
+    .info-box {
+        background-color: #e6f0ff;
+        color: #003366;
+        border-radius: 10px;
+        padding: 0.8rem 1rem;
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+    .model-box {
+        background-color: #f0f7ff;
+        border-left: 4px solid #0073e6;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-top: 1rem;
+        font-size: 0.95rem;
+        color: #003366;
+    }
 </style>
 """, unsafe_allow_html=True)
 
