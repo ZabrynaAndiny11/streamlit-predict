@@ -23,7 +23,7 @@ st.markdown("""
     --info-text: #003366;
     --model-bg: #f0f7ff;
 }
-
+            
 /DARK MODE 
 @media (prefers-color-scheme: dark) {
     :root {
@@ -37,13 +37,10 @@ st.markdown("""
         --model-bg: #3a3f4b !important;
     }
 }
-
 .main {
     background-color: var(--bg-color) !important;
     color: var(--text-color) !important;
 }
-
-/* TITLE tetap seperti permintaan Anda */
 .title {
     font-size: 2.2rem;
     font-weight: 700;
@@ -51,14 +48,12 @@ st.markdown("""
     text-align: center;
     margin-bottom: 0.5rem;
 }
-
 .subtitle {
     text-align: center;
     color: #555;
     font-size: 1.1rem;
     margin-bottom: 2rem;
 }
-
 .desc-box {
     background-color: var(--desc-bg) !important;
     border-radius: 12px;
@@ -67,12 +62,10 @@ st.markdown("""
     margin-bottom: 1.5rem;
     color: var(--text-color) !important;
 }
-
 .desc-box ol, 
 .desc-box li {
     color: var(--text-color) !important;
 }
-
 .info-box {
     background-color: var(--info-bg) !important;
     color: var(--info-text) !important;
@@ -81,7 +74,6 @@ st.markdown("""
     margin-bottom: 1rem;
     font-weight: 500;
 }
-            
 .model-box {
     background-color: var(--model-bg) !important;
     border-left: 4px solid #0073e6;
@@ -91,7 +83,6 @@ st.markdown("""
     font-size: 0.95rem;
     color: var(--text-color) !important;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -287,7 +278,6 @@ with tab2:
         df_show["Prediksi_LSTM (kWh)"] = df_show["Prediksi_LSTM (kWh)"].apply(lambda x: f"{x:,.0f}")
         df_show["Prediksi_GRU (kWh)"] = df_show["Prediksi_GRU (kWh)"].apply(lambda x: f"{x:,.0f}")
         st.dataframe(df_show, use_container_width=True)
-
         fig = go.Figure()
 
         # Data aktual
@@ -326,7 +316,6 @@ with tab2:
             hoverlabel=dict(bgcolor="white", font_size=14),
             template="plotly_white"
         )
-
         st.plotly_chart(fig, use_container_width=True)
 
         # Save CSV
@@ -342,14 +331,12 @@ with tab2:
                 mime="text/csv",
                 use_container_width=True
             )
-
     else:
         chosen_model_name = (
             "LSTM" if model_option == "LSTM"
             else "GRU" if model_option == "GRU"
             else ("LSTM" if "LSTM" in best_model_type else "GRU")
         )
-
         chosen_row = lstm_row if chosen_model_name == "LSTM" else gru_row
         chosen_model = lstm_model if chosen_model_name == "LSTM" else gru_model
 
@@ -362,7 +349,6 @@ with tab2:
             seq = np.vstack([seq[1:], np.array([[pred]])])
 
         preds_inv = [p * (max_kwh - min_kwh) + min_kwh for p in preds]
-
         pred_df = pd.DataFrame({
             "Tanggal": future_dates,
             f"Prediksi_{chosen_model_name} (kWh)": preds_inv
@@ -385,7 +371,6 @@ with tab2:
         col_name = df_show.columns[1]
         df_show[col_name] = df_show[col_name].apply(lambda x: f"{x:,.0f}")
         st.dataframe(df_show, use_container_width=True)
-
         # Chart
         fig = go.Figure()
 
@@ -415,7 +400,6 @@ with tab2:
             hoverlabel=dict(bgcolor="white", font_size=14),
             template="plotly_white"
         )
-
         st.plotly_chart(fig, use_container_width=True)
 
         # Save CSV
