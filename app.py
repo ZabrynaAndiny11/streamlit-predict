@@ -14,15 +14,10 @@ st.set_page_config(
 
 # css
 st.markdown("""
-<style> 
-
-/* =========================
-   LIGHT MODE (tetap)
-   ========================= */
+<style>
 .main { background-color: #f9fafb; } 
 .title { font-size: 2.2rem; font-weight: 700; color: #003366; text-align: center; margin-bottom: 0.5rem; } 
 .subtitle { text-align: center; color: #555; font-size: 1.1rem; margin-bottom: 2rem; }
-
 .desc-box { 
     background-color: #ffffff; 
     border-radius: 12px; 
@@ -31,7 +26,6 @@ st.markdown("""
     margin-bottom: 1.5rem; 
     color: #000;
 } 
-
 .info-box { 
     background-color: #e6f0ff; 
     color: #003366; 
@@ -40,7 +34,6 @@ st.markdown("""
     margin-bottom: 1rem; 
     font-weight: 500; 
 } 
-
 .model-box { 
     background-color: #f0f7ff; 
     border-left: 4px solid #0073e6; 
@@ -50,37 +43,30 @@ st.markdown("""
     font-size: 0.95rem; 
     color: #003366; 
 }
-
-/* =========================
-   DARK MODE (Perbaikan Utama)
-   ========================= */
-html.st-dark .desc-box {
+            
+[data-theme="dark"] .desc-box {
     background-color: #57595B !important;
     color: #f0f0f0 !important;
 }
-html.st-dark .desc-box * {
+[data-theme="dark"] .desc-box * {
     color: #f0f0f0 !important;
 }
-
-html.st-dark .info-box {
+[data-theme="dark"] .info-box {
     background-color: #57595B !important;
     color: #f0f0f0 !important;
 }
-html.st-dark .info-box * {
+[data-theme="dark"] .info-box * {
     color: #f0f0f0 !important;
 }
-
-html.st-dark .model-box {
+[data-theme="dark"] .model-box {
     background-color: #57595B !important;
     border-left: 4px solid #a7c7ff !important;
     color: #f0f0f0 !important;
 }
-html.st-dark .model-box * {
+[data-theme="dark"] .model-box * {
     color: #f0f0f0 !important;
 }
-
 </style>
-
 """, unsafe_allow_html=True)
 
 # HEADER UTAMA
