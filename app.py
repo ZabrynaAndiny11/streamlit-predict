@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import tensorflow as tf
 import os
 import plotly.graph_objects as go
@@ -14,74 +13,30 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-/LIGHT MODE (default)
-:root {
-    --bg-color: #f9fafb;
-    --text-color: #000;
-    --desc-bg: #ffffff;
-    --info-bg: #e6f0ff;
-    --info-text: #003366;
-    --model-bg: #f0f7ff;
-}
-            
-/DARK MODE 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg-color: #0e1117 !important;
-        --text-color: #e5e5e5 !important;
-
-        /* warna box */
-        --desc-bg: #57595B !important;
-        --info-bg: #2e3645 !important;
-        --info-text: #e8ecf2 !important;
-        --model-bg: #3a3f4b !important;
-    }
-}
-.main {
-    background-color: var(--bg-color) !important;
-    color: var(--text-color) !important;
-}
 .title {
     font-size: 2.2rem;
     font-weight: 700;
-    color: #003366;
     text-align: center;
     margin-bottom: 0.5rem;
 }
 .subtitle {
     text-align: center;
-    color: #555;
     font-size: 1.1rem;
     margin-bottom: 2rem;
 }
 .desc-box {
-    background-color: var(--desc-bg) !important;
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 1px 6px rgba(0,0,0,0.08);
     margin-bottom: 1.5rem;
-    color: var(--text-color) !important;
 }
-.desc-box ol, 
-.desc-box li {
-    color: var(--text-color) !important;
-}
-.info-box {
-    background-color: var(--info-bg) !important;
-    color: var(--info-text) !important;
-    border-radius: 10px;
-    padding: 0.8rem 1rem;
-    margin-bottom: 1rem;
-    font-weight: 500;
-}
+
 .model-box {
-    background-color: var(--model-bg) !important;
     border-left: 4px solid #0073e6;
     padding: 1rem;
     border-radius: 6px;
     margin-top: 1rem;
     font-size: 0.95rem;
-    color: var(--text-color) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -148,7 +103,6 @@ with tab2:
             """,
             unsafe_allow_html=True
         )
-
     wilayah = st.sidebar.selectbox("Pilih Wilayah", ["Selatan", "Utara"])
     n_future = st.sidebar.slider("Jumlah Bulan Prediksi", 1, 12, 6)
     model_option = st.sidebar.selectbox("Pilih Model Prediksi", ["Model Terbaik", "LSTM", "GRU"])
@@ -174,8 +128,6 @@ with tab2:
 
     # LOAD DATA
     data = pd.read_excel(data_path)
-
-    # Urutkan kolom menjadi tahun, bulan, tanggal, konsumsi_kWh
     desired_order = ["tahun", "bulan", "tanggal", "konsumsi_kWh"]
     existing_cols = [col for col in desired_order if col in data.columns]
     data = data[existing_cols + [col for col in data.columns if col not in existing_cols]]
@@ -184,12 +136,9 @@ with tab2:
     st.caption("Berikut 12 bulan terakhir konsumsi listrik yang digunakan sebagai dasar prediksi:")
 
     df_last = data.tail(12).copy()
-
-    # Pastikan kolom tahun tidak berubah menjadi format ribuan
     if "tahun" in df_last.columns:
         df_last["tahun"] = df_last["tahun"].astype(str)
-
-    # Format konsumsi_kWh saja
+        
     if "konsumsi_kWh" in df_last.columns:
         df_last["konsumsi_kWh"] = df_last["konsumsi_kWh"].apply(lambda x: f"{x:,.0f}")
 
@@ -272,7 +221,7 @@ with tab2:
         </div>
         """, unsafe_allow_html=True)
 
-        # Show table
+        # Tabel
         st.markdown("<div style='margin-top: 1.5rem;'></div>", unsafe_allow_html=True)
         df_show = compare_df.copy()
         df_show["Prediksi_LSTM (kWh)"] = df_show["Prediksi_LSTM (kWh)"].apply(lambda x: f"{x:,.0f}")
@@ -318,7 +267,7 @@ with tab2:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # Save CSV
+        # Simpan CSV
         csv_filename = f"prediksi_perbandingan_{wilayah.lower()}_{n_future}bulan.csv"
         csv_path = os.path.join(dashboard_result_dir, csv_filename)
         compare_df.to_csv(csv_path, index=False)
@@ -365,13 +314,12 @@ with tab2:
         </div>
         """, unsafe_allow_html=True)
 
-        # Show DataFrame
+        # Tampilkan DataFrame
         st.markdown("<div style='margin-top: 1.5rem;'></div>", unsafe_allow_html=True)
         df_show = pred_df.copy()
         col_name = df_show.columns[1]
         df_show[col_name] = df_show[col_name].apply(lambda x: f"{x:,.0f}")
         st.dataframe(df_show, use_container_width=True)
-        # Chart
         fig = go.Figure()
 
         # Data aktual
@@ -402,7 +350,7 @@ with tab2:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # Save CSV
+        # Simpan CSV
         csv_filename = f"prediksi_{wilayah.lower()}_{chosen_model_name.lower()}_{n_future}bulan.csv"
         csv_path = os.path.join(dashboard_result_dir, csv_filename)
         pred_df.to_csv(csv_path, index=False)
