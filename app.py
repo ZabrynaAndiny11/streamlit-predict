@@ -175,7 +175,7 @@ with tab2:
     col1.metric("Model", best_model_row["Model"])
     col2.metric("Batch", int(best_model_row["Batch"]))
     col3.metric("Epochs", int(best_model_row["Epochs"]))
-    col4.metric("MAPE (Inverse)", f"{best_model_row['MAPE_Inv']:.2f}%")
+    col4.metric("MAPE", f"{best_model_row['MAPE_Inv']:.2f}%")
     st.divider()
 
     # NORMALISASI
@@ -309,7 +309,7 @@ with tab2:
         <ul>
             <li>Batch size: <b>{int(chosen_row['Batch'])}</b></li>
             <li>Epoch: <b>{int(chosen_row['Epochs'])}</b></li>
-            <li>MAPE (Inverse): <b>{float(chosen_row['MAPE_Inv']):.2f}%</b></li>
+            <li>MAPE: <b>{float(chosen_row['MAPE_Inv']):.2f}%</b></li>
         </ul>
         </div>
         """, unsafe_allow_html=True)
