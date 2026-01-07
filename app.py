@@ -81,12 +81,15 @@ with tab1:
 
 # TAB 2: PREDIKSI
 with tab2:
-    icon_path = "icon/filter.png"
-    base_dir = "."
-    data_dir = os.path.join(base_dir, "data")
-    result_selatan = os.path.join(base_dir, "PLN_Selatan_Predict", "results_lstm_gru_callback2")
-    result_utara = os.path.join(base_dir, "PLN_Utara_Predict", "results_lstm_gru_callback2")
-
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    icon_path = os.path.join(BASE_DIR, "icon", "filter.png")
+    data_dir = os.path.join(BASE_DIR, "data")
+    result_selatan = os.path.join(
+        BASE_DIR, "PLN_Selatan_Predict", "results_lstm_gru_callback2"
+    )
+    result_utara = os.path.join(
+        BASE_DIR, "PLN_Utara_Predict", "results_lstm_gru_callback2"
+    )
     dashboard_result_dir = os.path.join(base_dir, "results_dashboard_streamlit")
     os.makedirs(dashboard_result_dir, exist_ok=True)
 
@@ -132,7 +135,7 @@ with tab2:
     data = pd.read_excel(data_path)
 
     # Urutkan kolom menjadi tahun, bulan, tanggal, konsumsi_kWh_clean
-    desired_order = ["tahun", "bulan", "tanggal", "konsumsi_kWh_clean_clean"]
+    desired_order = ["tahun", "bulan", "tanggal", "konsumsi_kWh_clean"]
     existing_cols = [col for col in desired_order if col in data.columns]
     data = data[existing_cols + [col for col in data.columns if col not in existing_cols]]
 
