@@ -84,10 +84,10 @@ with tab2:
     icon_path = "icon/filter.png"
     base_dir = "."
     data_dir = os.path.join(base_dir, "data")
-    result_selatan = os.path.join(base_dir, "PLN_Data_Selatan", "results_lstm_gru")
-    result_utara = os.path.join(base_dir, "PLN_Data_Utara", "results_models_lstm_gru")
+    result_selatan = os.path.join(base_dir, "PLN_Selatan_Predict", "results_lstm_gru_callback2")
+    result_utara = os.path.join(base_dir, "PLN_Utara_Predict", "results_lstm_gru_callback2")
 
-    dashboard_result_dir = os.path.join(base_dir, "results_dashboard")
+    dashboard_result_dir = os.path.join(base_dir, "results_dashboard_streamlit")
     os.makedirs(dashboard_result_dir, exist_ok=True)
 
     # SIDEBAR
@@ -103,6 +103,7 @@ with tab2:
             """,
             unsafe_allow_html=True
         )
+
     wilayah = st.sidebar.selectbox("Pilih Wilayah", ["Selatan", "Utara"])
     n_future = st.sidebar.slider("Jumlah Bulan Prediksi", 1, 12, 6)
     model_option = st.sidebar.selectbox("Pilih Model Prediksi", ["Model Terbaik", "LSTM", "GRU"])
@@ -111,41 +112,47 @@ with tab2:
     st.sidebar.markdown("""
     <hr style='border:0.5px solid #ccc; margin:13rem 0 0.3rem 0;'>
     <div style='text-align:center; color:#555; font-size:0.85rem; margin-top:0.3rem;'>
-    Skripsi 2025 — H071221066<br>Universitas Hasanuddin
+    Skripsi 2025 - H071221066<br>Universitas Hasanuddin
     </div>
     """, unsafe_allow_html=True)
 
     # DATA PATH
     data_path = os.path.join(
         data_dir, 
-        "data_listrik_bulanan_sltn.xlsx" if wilayah == "Selatan" else "data_listrik_bulanan_utara_winsor2.xlsx"
+        "data_listrik_sltn_clean.xlsx" if wilayah == "Selatan" else "data_listrik_utara_clean.xlsx"
     )
     result_dir = result_selatan if wilayah == "Selatan" else result_utara
 
+    # load model lebih cepat
     @st.cache_resource
     def load_model_cached(model_path):
         return tf.keras.models.load_model(model_path, compile=False)
 
     # LOAD DATA
     data = pd.read_excel(data_path)
-    desired_order = ["tahun", "bulan", "tanggal", "konsumsi_kWh"]
+
+    # Urutkan kolom menjadi tahun, bulan, tanggal, konsumsi_kWh_clean
+    desired_order = ["tahun", "bulan", "tanggal", "konsumsi_kWh_clean_clean"]
     existing_cols = [col for col in desired_order if col in data.columns]
     data = data[existing_cols + [col for col in data.columns if col not in existing_cols]]
 
     st.subheader(f"📊 Data Konsumsi Listrik Wilayah {wilayah}")
     st.caption("Berikut 12 bulan terakhir konsumsi listrik yang digunakan sebagai dasar prediksi:")
 
+    # menampilkan data pada tabel
     df_last = data.tail(12).copy()
+
+    # Pastikan kolom tahun tidak berubah menjadi format ribuan
     if "tahun" in df_last.columns:
         df_last["tahun"] = df_last["tahun"].astype(str)
-        
-    if "konsumsi_kWh" in df_last.columns:
-        df_last["konsumsi_kWh"] = df_last["konsumsi_kWh"].apply(lambda x: f"{x:,.0f}")
+
+    if "konsumsi_kWh_clean" in df_last.columns:
+        df_last["konsumsi_kWh_clean"] = df_last["konsumsi_kWh_clean"].apply(lambda x: f"{x:,.0f}")
 
     st.dataframe(df_last, use_container_width=True)
-    st.divider()
+    st.divider()   #garis pemisah
 
-    rekap_path = os.path.join(result_dir, "rekap_semua_model.csv")
+    rekap_path = os.path.join(result_dir, "rekap_hasil_model.csv")
     rekap = pd.read_csv(rekap_path)
 
     rekap["MAPE_Inv"] = (
@@ -157,14 +164,22 @@ with tab2:
         .astype(float)
     )
 
+    # Mengambil baris model terbaik (MAPE paling kecil)
     best_model_row = rekap.loc[rekap["MAPE_Inv"].idxmin()]
     best_model_type = best_model_row["Model"]
 
-    lstm_row = rekap[rekap["Model"].str.contains("LSTM")].sort_values("MAPE_Inv").iloc[0]
-    gru_row  = rekap[rekap["Model"].str.contains("GRU")].sort_values("MAPE_Inv").iloc[0]
+    # mengambil baris model terbaik
+    lstm_row = rekap[rekap["Model"] == "LSTM"].sort_values("MAPE_Inv").iloc[0]
+    gru_row  = rekap[rekap["Model"] == "GRU"].sort_values("MAPE_Inv").iloc[0]
 
-    lstm_model_path = os.path.join(result_dir, f"LSTM_batch{int(lstm_row['Batch'])}_epoch{int(lstm_row['Epochs'])}.h5")
-    gru_model_path  = os.path.join(result_dir, f"GRU_batch{int(gru_row['Batch'])}_epoch{int(gru_row['Epochs'])}.h5")
+    lstm_model_path = os.path.join(
+        result_dir, f"LSTM_batch{int(lstm_row['Batch'])}_best.h5")
+    gru_model_path = os.path.join(
+        result_dir, f"GRU_batch{int(gru_row['Batch'])}_best.h5")
+
+    @st.cache_resource
+    def load_model_cached(path):
+        return tf.keras.models.load_model(path, compile=False)
 
     lstm_model = load_model_cached(lstm_model_path)
     gru_model  = load_model_cached(gru_model_path)
@@ -174,25 +189,27 @@ with tab2:
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Model", best_model_row["Model"])
     col2.metric("Batch", int(best_model_row["Batch"]))
-    col3.metric("Epochs", int(best_model_row["Epochs"]))
+    col3.metric("Epoch Terbaik", int(best_model_row["Best_Epoch"]))
     col4.metric("MAPE", f"{best_model_row['MAPE_Inv']:.2f}%")
     st.divider()
 
     # NORMALISASI
     scaler = MinMaxScaler()
-    scaled_data = scaler.fit_transform(data[['konsumsi_kWh']].astype(float))
+    scaled_data = scaler.fit_transform(data[['konsumsi_kWh_clean']].astype(float))
 
+    # Sequence 
     seq_len = 12
     min_kwh = scaler.data_min_[0]
     max_kwh = scaler.data_max_[0]
 
+    # Membuat tanggal prediksi
     last_date = data['tanggal'].iloc[-1]
     future_dates = pd.date_range(start=last_date + pd.offsets.MonthBegin(1), periods=n_future, freq='MS')
 
-    # PREDIKSI 
+    # PREDIKSI GABUNGAN LSTM - GRU
     if compare_models:
         preds_lstm, preds_gru = [], []
-        seq_lstm = scaled_data[-seq_len:].copy()
+        seq_lstm = scaled_data[-seq_len:].copy()        #12 bulan terakhir sebagai input window
         seq_gru  = scaled_data[-seq_len:].copy()
 
         for _ in range(n_future):
@@ -205,6 +222,7 @@ with tab2:
             seq_lstm = np.vstack([seq_lstm[1:], np.array([[pred_l]])])
             seq_gru  = np.vstack([seq_gru[1:], np.array([[pred_g]])])
 
+        # Denormalisasi
         preds_lstm_inv = [p * (max_kwh - min_kwh) + min_kwh for p in preds_lstm]
         preds_gru_inv  = [p * (max_kwh - min_kwh) + min_kwh for p in preds_gru]
 
@@ -216,12 +234,12 @@ with tab2:
 
         st.markdown(f"""
         <div class='model-box'>
-        🔹 <b>LSTM</b>: Batch = {int(lstm_row['Batch'])}, Epoch = {int(lstm_row['Epochs'])}, MAPE = {float(lstm_row['MAPE_Inv']):.2f}%<br>
-        🔸 <b>GRU</b>: Batch = {int(gru_row['Batch'])}, Epoch = {int(gru_row['Epochs'])}, MAPE = {float(gru_row['MAPE_Inv']):.2f}% 
+        🔹 <b>LSTM</b>: Batch = {int(lstm_row['Batch'])}, Epoch = {int(lstm_row['Best_Epoch'])}, MAPE = {float(lstm_row['MAPE_Inv']):.2f}%<br>
+        🔸 <b>GRU</b>: Batch = {int(gru_row['Batch'])}, Epoch = {int(gru_row['Best_Epoch'])}, MAPE = {float(gru_row['MAPE_Inv']):.2f}% 
         </div>
         """, unsafe_allow_html=True)
 
-        # Tabel
+        # Tabel prediksi
         st.markdown("<div style='margin-top: 1.5rem;'></div>", unsafe_allow_html=True)
         df_show = compare_df.copy()
         df_show["Prediksi_LSTM (kWh)"] = df_show["Prediksi_LSTM (kWh)"].apply(lambda x: f"{x:,.0f}")
@@ -232,7 +250,7 @@ with tab2:
         # Data aktual
         fig.add_trace(go.Scatter(
             x=data["tanggal"],
-            y=data["konsumsi_kWh"],
+            y=data["konsumsi_kWh_clean"],
             mode="lines+markers",
             name="Data Aktual",
             hovertemplate="<b>%{x|%d-%b-%Y}</b><br>Total: <b>%{y:,.0f} kWh</b><extra></extra>"
@@ -267,7 +285,7 @@ with tab2:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # Simpan CSV
+        # Save CSV
         csv_filename = f"prediksi_perbandingan_{wilayah.lower()}_{n_future}bulan.csv"
         csv_path = os.path.join(dashboard_result_dir, csv_filename)
         compare_df.to_csv(csv_path, index=False)
@@ -308,24 +326,25 @@ with tab2:
         Model <b>{chosen_model_name}</b> dijalankan dengan konfigurasi:
         <ul>
             <li>Batch size: <b>{int(chosen_row['Batch'])}</b></li>
-            <li>Epoch: <b>{int(chosen_row['Epochs'])}</b></li>
+            <li>Epoch: <b>{int(chosen_row['Best_Epoch'])}</b></li>
             <li>MAPE: <b>{float(chosen_row['MAPE_Inv']):.2f}%</b></li>
         </ul>
         </div>
         """, unsafe_allow_html=True)
 
-        # Tampilkan DataFrame
+        # Show DataFrame
         st.markdown("<div style='margin-top: 1.5rem;'></div>", unsafe_allow_html=True)
         df_show = pred_df.copy()
         col_name = df_show.columns[1]
         df_show[col_name] = df_show[col_name].apply(lambda x: f"{x:,.0f}")
         st.dataframe(df_show, use_container_width=True)
+        # Chart
         fig = go.Figure()
 
         # Data aktual
         fig.add_trace(go.Scatter(
             x=data["tanggal"],
-            y=data["konsumsi_kWh"],
+            y=data["konsumsi_kWh_clean"],
             mode="lines+markers",
             name="Data Aktual",
             hovertemplate="<b>%{x|%d-%b-%Y}</b><br>Total: <b>%{y:,.0f} kWh</b><extra></extra>"
@@ -350,7 +369,7 @@ with tab2:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # Simpan CSV
+        # Save CSV
         csv_filename = f"prediksi_{wilayah.lower()}_{chosen_model_name.lower()}_{n_future}bulan.csv"
         csv_path = os.path.join(dashboard_result_dir, csv_filename)
         pred_df.to_csv(csv_path, index=False)
